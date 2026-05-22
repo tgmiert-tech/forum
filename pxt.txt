@@ -6,5 +6,5 @@
   "text": "скрипт для троллинга начать - .spam остановить - .stop",
   "image": "",
   "video": "",
-  "files": ["spam.txt", "text.py"]
+  "files": ["spam.py", "text.txt"]
 }
