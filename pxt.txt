@@ -1,0 +1,10 @@
+{
+  "date": "22 мая 2026",
+  "author": "wheback",
+  "avatar": "M",
+  "tags": ["скрипт"],
+  "text": "скрипт для троллинга начать - .spam остановить - .stop",
+  "image": "",
+  "video": "",
+  "files": ["spam.py", "text.txt"]
+}

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
+    <title>Форум • mani.net</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #030303; --card: #0b0b0b; --border: #1a1a1a; --border-hover: #2e2e2e;
+            --text: #b0b0b0; --text-bright: #f5f5f5; --text-secondary: #666; --text-tertiary: #444;
+            --accent: #fff; --badge-bg: #111; --badge-border: #222; --badge-color: #777;
+            --divider-color: #222; --image-brightness: 0.8; --image-hover-brightness: 0.9;
+            --star-opacity: 0.7; --music-btn-bg: rgba(20,20,20,0.85); --music-btn-color: #ccc;
+            --music-btn-border: rgba(255,255,255,0.1); --music-btn-hover-bg: rgba(30,30,30,0.9);
+            --music-btn-hover-color: #fff; --post-bg: #0b0b0b; --post-border: #1a1a1a;
+            --post-hover-border: #2a2a2a; --tag-bg: #111; --tag-color: #888; --tag-border: #1f1f1f;
+            --lightbox-bg: rgba(0,0,0,0.95); --file-bg: #0f0f0f; --file-border: #1f1f1f; --file-hover: #1a1a1a;
+            --forum-badge-bg: #111; --forum-badge-color: #888; --forum-badge-border: #1f1f1f;
+            --forum-avatar-bg: #1a1a1a; --btn-bg: #fff; --btn-color: #000; --btn-hover: #e5e5e5;
+        }
+
+        body.light {
+            --bg: #f5f5f5; --card: #ffffff; --border: #e0e0e0; --border-hover: #c0c0c0;
+            --text: #666; --text-bright: #111; --text-secondary: #999; --text-tertiary: #aaa; --accent: #000;
+            --badge-bg: #f0f0f0; --badge-border: #ddd; --badge-color: #888;
+            --divider-color: #ddd; --image-brightness: 1; --image-hover-brightness: 1.05; --star-opacity: 0.4;
+            --music-btn-bg: rgba(255,255,255,0.85); --music-btn-color: #555; --music-btn-border: rgba(0,0,0,0.1);
+            --music-btn-hover-bg: rgba(255,255,255,0.95); --music-btn-hover-color: #000;
+            --post-bg: #ffffff; --post-border: #e0e0e0; --post-hover-border: #c0c0c0;
+            --tag-bg: #f0f0f0; --tag-color: #888; --tag-border: #ddd;
+            --lightbox-bg: rgba(255,255,255,0.95); --file-bg: #f8f8f8; --file-border: #e0e0e0; --file-hover: #eee;
+            --forum-badge-bg: #f0f0f0; --forum-badge-color: #888; --forum-badge-border: #ddd;
+            --forum-avatar-bg: #e8e8e8; --btn-bg: #000; --btn-color: #fff; --btn-hover: #1a1a1a;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 1rem; margin: 0; position: relative; overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent; transition: background 0.5s ease;
+        }
+
+        body::before {
+            content: ""; position: fixed; inset: 0;
+            background: radial-gradient(ellipse at 20% 20%, rgba(128,128,128,0.12) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 75%, rgba(100,100,100,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 50% 50%, rgba(128,128,128,0.01) 0%, transparent 70%);
+            pointer-events: none; z-index: 0; animation: ambientPulse 8s ease-in-out infinite alternate;
+        }
+        @keyframes ambientPulse { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        body::after {
+            content: ""; position: fixed; inset: 0;
+            background-image: linear-gradient(rgba(128,128,128,0.04) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(128,128,128,0.04) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none; z-index: 0;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        }
+
+        .theme-toggle {
+            position: fixed; top: 1.5rem; right: 1.5rem; z-index: 200;
+            background: var(--card); border: 1px solid var(--border); border-radius: 50%;
+            width: 2.8rem; height: 2.8rem; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text); font-size: 1.2rem; transition: all 0.3s ease;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .theme-toggle:hover { transform: scale(1.1); border-color: var(--border-hover); }
+
+        .stars { position: fixed; inset: 0; pointer-events: none; z-index: 99; overflow: hidden; }
+        .star { position: absolute; background: var(--accent); border-radius: 50%; animation: twinkle ease-in-out infinite; opacity: 0; }
+        @keyframes twinkle {
+            0%,100% { opacity: 0; transform: scale(0.5); }
+            30% { opacity: var(--star-opacity); transform: scale(1); }
+            50% { opacity: var(--star-opacity); transform: scale(1.3); }
+            70% { opacity: var(--star-opacity); transform: scale(1); }
+        }
+        .star-glow { position: absolute; background: var(--accent); border-radius: 50%; filter: blur(3px); animation: glowPulse ease-in-out infinite; opacity: 0; }
+        @keyframes glowPulse {
+            0%,100% { opacity: 0; transform: scale(0.5); }
+            40% { opacity: 0.15; transform: scale(1.5); }
+            60% { opacity: 0.1; transform: scale(1.8); }
+        }
+
+        .app-container {
+            position: relative; z-index: 2; width: 100%; max-width: 600px;
+            display: flex; flex-direction: column; gap: 1.5rem;
+            opacity: 0; transform: translateY(20px);
+            animation: entry 0.8s cubic-bezier(0.22,0.61,0.36,1) forwards;
+        }
+        @keyframes entry { to { opacity: 1; transform: translateY(0); } }
+
+        .forum-header {
+            display: flex; flex-direction: column; align-items: center; gap: 0.6rem; text-align: center;
+        }
+        .forum-header h1 {
+            font-size: 2rem; font-weight: 700; letter-spacing: -0.4px; color: var(--text-bright);
+        }
+        .forum-header .subtitle {
+            font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 0.3px;
+        }
+        .divider {
+            width: 50px; height: 1px; background: linear-gradient(90deg, transparent, var(--divider-color), transparent);
+            margin: 0 auto;
+        }
+
+        .filter-bar {
+            display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;
+        }
+        .filter-tag {
+            font-size: 0.7rem; padding: 0.35rem 0.9rem; border-radius: 2rem;
+            background: var(--tag-bg); color: var(--tag-color); border: 1px solid var(--tag-border);
+            cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; font-weight: 500;
+        }
+        .filter-tag:hover, .filter-tag.active {
+            background: var(--btn-bg); color: var(--btn-color); border-color: var(--btn-bg);
+        }
+        .filter-reset {
+            font-size: 0.7rem; padding: 0.35rem 0.9rem; border-radius: 2rem;
+            background: transparent; color: var(--text-secondary); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; font-weight: 500;
+            display: none; align-items: center; gap: 0.3rem;
+        }
+        .filter-reset.visible { display: inline-flex; }
+        .filter-reset:hover { border-color: var(--border-hover); color: var(--text-bright); }
+
+        .topics-container { display: flex; flex-direction: column; gap: 0.8rem; }
+
+        .topic-card {
+            background: var(--post-bg); border: 1px solid var(--post-border); border-radius: 1.5rem;
+            overflow: hidden; transition: all 0.3s ease;
+        }
+        .topic-card:hover { border-color: var(--post-hover-border); transform: translateY(-2px); }
+
+        .topic-header {
+            display: flex; align-items: center; gap: 0.7rem; padding: 1rem 1.3rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .topic-avatar {
+            width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--forum-avatar-bg);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem; color: var(--text-bright);
+            border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .topic-user-info { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+        .topic-username { font-weight: 600; font-size: 0.85rem; color: var(--text-bright); }
+        .topic-meta { font-size: 0.65rem; color: var(--text-tertiary); display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .topic-badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.6rem; padding: 0.2rem 0.6rem; border-radius: 2rem;
+            background: var(--forum-badge-bg); color: var(--forum-badge-color);
+            border: 1px solid var(--forum-badge-border); letter-spacing: 0.3px;
+        }
+
+        .topic-body { padding: 1rem 1.3rem 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+        .topic-image { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #0a0a0a; cursor: pointer; border-radius: 0.8rem; transition: filter 0.3s ease; }
+        .topic-image:hover { filter: brightness(1.1); }
+        .topic-video { width: 100%; aspect-ratio: 16/9; display: block; background: #000; border: none; outline: none; border-radius: 0.8rem; }
+        .topic-text { font-size: 0.9rem; color: var(--text); line-height: 1.6; }
+
+        .file-attachments { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.2rem; }
+        .file-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--file-bg); border: 1px solid var(--file-border);
+            border-radius: 2rem; padding: 0.4rem 0.9rem; text-decoration: none;
+            transition: all 0.25s; cursor: pointer; font-size: 0.75rem;
+            color: var(--text); font-weight: 500; letter-spacing: 0.2px;
+        }
+        .file-item:hover { background: var(--file-hover); border-color: var(--border-hover); transform: translateY(-1px); }
+        .file-item i { font-size: 0.9rem; }
+
+        .music-fab {
+            position: fixed; bottom: 1.8rem; right: 1.8rem; z-index: 300;
+            background: var(--music-btn-bg); border: 1px solid var(--music-btn-border); border-radius: 50%;
+            width: 3.2rem; height: 3.2rem; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--music-btn-color); font-size: 1.3rem;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); transition: all 0.3s ease;
+        }
+        .music-fab:hover { background: var(--music-btn-hover-bg); color: var(--music-btn-hover-color); transform: scale(1.1); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+        .music-fab:active { transform: scale(0.95); }
+        .music-fab.playing { animation: fabGlow 2s ease-in-out infinite; }
+        @keyframes fabGlow { 0%,100% { box-shadow: 0 8px 25px rgba(0,0,0,0.3); } 50% { box-shadow: 0 8px 35px rgba(128,128,128,0.15), 0 0 0 8px rgba(128,128,128,0.03); } }
+
+        .lightbox {
+            position: fixed; inset: 0; z-index: 9999; background: var(--lightbox-bg);
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease; cursor: zoom-out;
+        }
+        .lightbox.active { display: flex; opacity: 1; }
+        .lightbox-close {
+            position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;
+            width: 3rem; height: 3rem; border-radius: 50%; background: rgba(128,128,128,0.15);
+            border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 1.3rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        .lightbox-close:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
+        .lightbox-image-wrap { max-width: 90vw; max-height: 90vh; overflow: hidden; cursor: grab; display: flex; align-items: center; justify-content: center; transition: transform 0.1s ease; }
+        .lightbox-image-wrap:active { cursor: grabbing; }
+        .lightbox-image { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 0.5rem; user-select: none; -webkit-user-drag: none; transform-origin: center center; transition: transform 0.3s ease; }
+        .lightbox-controls {
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 0.8rem; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); border-radius: 3rem; padding: 0.5rem 1rem;
+            border: 1px solid rgba(255,255,255,0.1); z-index: 10;
+        }
+        .lightbox-control-btn {
+            background: transparent; border: none; color: #fff; font-size: 1.2rem;
+            cursor: pointer; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .lightbox-control-btn:hover { background: rgba(255,255,255,0.15); }
+
+        @media (max-width: 450px) {
+            .topic-body { padding: 1rem; }
+            .topic-header { padding: 0.8rem 1rem; }
+            .forum-header h1 { font-size: 1.6rem; }
+            .theme-toggle { top: 1rem; right: 1rem; width: 2.4rem; height: 2.4rem; font-size: 1rem; }
+            .music-fab { bottom: 1.2rem; right: 1.2rem; width: 2.8rem; height: 2.8rem; font-size: 1.1rem; }
+            .lightbox-close { top: 1rem; right: 1rem; width: 2.4rem; height: 2.4rem; font-size: 1rem; }
+            .lightbox-controls { bottom: 1.2rem; gap: 0.4rem; padding: 0.4rem 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="Тема"><i class="ri-sun-line" id="themeIcon"></i></button>
+    <button class="music-fab" id="musicFab" aria-label="Музыка"><i class="ri-play-fill" id="fabIcon"></i></button>
+    <div class="stars" id="starsContainer"></div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose"><i class="ri-close-line"></i></button>
+        <div class="lightbox-image-wrap" id="lightboxImageWrap">
+            <img class="lightbox-image" id="lightboxImage" src="" alt="Lightbox" draggable="false">
+        </div>
+        <div class="lightbox-controls">
+            <button class="lightbox-control-btn" id="zoomOut" title="Уменьшить"><i class="ri-zoom-out-line"></i></button>
+            <button class="lightbox-control-btn" id="zoomReset" title="Сбросить"><i class="ri-fullscreen-line"></i></button>
+            <button class="lightbox-control-btn" id="zoomIn" title="Приблизить"><i class="ri-zoom-in-line"></i></button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="forum-header">
+            <h1>Форум</h1>
+            <p class="subtitle">обсуждения · файлы · сообщество</p>
+            <div class="divider"></div>
+        </div>
+
+        <div class="filter-bar" id="filterBar"></div>
+
+        <div class="topics-container" id="topicsContainer"></div>
+    </div>
+
+    <audio id="bgAudio" preload="auto" loop><source src="musik/miert.mp3" type="audio/mpeg"></audio>
+
+    <script>
+    (function() {
+        const audio = document.getElementById('bgAudio');
+        const musicFab = document.getElementById('musicFab');
+        const fabIcon = document.getElementById('fabIcon');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const starsContainer = document.getElementById('starsContainer');
+        const topicsContainer = document.getElementById('topicsContainer');
+        const filterBar = document.getElementById('filterBar');
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxImageWrap = document.getElementById('lightboxImageWrap');
+        const lightboxClose = document.getElementById('lightboxClose');
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const zoomResetBtn = document.getElementById('zoomReset');
+
+        let userInteracted = false;
+        let isDark = true;
+        let currentScale = 1;
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
+        let allTopics = [];
+        let activeFilter = null;
+
+        function applyImageTransform() {
+            lightboxImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+        }
+
+        function resetZoom() { currentScale = 1; translateX = 0; translateY = 0; applyImageTransform(); lightboxImageWrap.style.cursor = 'grab'; }
+        function openLightbox(src) { lightboxImage.src = src; resetZoom(); lightbox.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeLightbox() { lightbox.classList.remove('active'); document.body.style.overflow = ''; resetZoom(); }
+
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+        zoomInBtn.addEventListener('click', () => { currentScale = Math.min(currentScale + 0.5, 5); applyImageTransform(); });
+        zoomOutBtn.addEventListener('click', () => { currentScale = Math.max(currentScale - 0.5, 0.5); if (currentScale <= 1) { translateX = 0; translateY = 0; } applyImageTransform(); });
+        zoomResetBtn.addEventListener('click', resetZoom);
+
+        lightboxImageWrap.addEventListener('mousedown', (e) => {
+            if (currentScale > 1) { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; lightboxImageWrap.style.cursor = 'grabbing'; e.preventDefault(); }
+        });
+        window.addEventListener('mousemove', (e) => { if (!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; applyImageTransform(); });
+        window.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; lightboxImageWrap.style.cursor = currentScale > 1 ? 'grab' : 'zoom-out'; } });
+        lightboxImageWrap.addEventListener('wheel', (e) => { e.preventDefault(); const delta = e.deltaY > 0 ? -0.3 : 0.3; currentScale = Math.min(Math.max(currentScale + delta, 0.5), 5); if (currentScale <= 1) { translateX = 0; translateY = 0; } applyImageTransform(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); });
+
+        function renderFileAttachments(files) {
+            if (!files || !files.length) return '';
+            return `<div class="file-attachments">${files.map(file => {
+                const fileName = file.split('/').pop();
+                const ext = fileName.split('.').pop().toLowerCase();
+                let icon = 'ri-file-line';
+                if (['pdf'].includes(ext)) icon = 'ri-file-pdf-line';
+                else if (['zip','rar','7z'].includes(ext)) icon = 'ri-file-zip-line';
+                else if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) icon = 'ri-image-line';
+                else if (['mp4','webm','avi'].includes(ext)) icon = 'ri-video-line';
+                else if (['mp3','wav','flac','ogg'].includes(ext)) icon = 'ri-music-line';
+                else if (['txt','md','json','xml','csv'].includes(ext)) icon = 'ri-file-text-line';
+                else if (['js','py','html','css','cpp','java'].includes(ext)) icon = 'ri-code-line';
+                const filePath = file.startsWith('http') ? file : 'fale/' + file;
+                return `<a href="${filePath}" class="file-item" target="_blank" download><i class="${icon}"></i> ${fileName}</a>`;
+            }).join('')}</div>`;
+        }
+
+        function getAllTags(topics) {
+            const tagSet = new Set();
+            topics.forEach(t => (t.tags || []).forEach(tag => tagSet.add(tag)));
+            return Array.from(tagSet);
+        }
+
+        function renderFilterBar(tags) {
+            if (!filterBar) return;
+            filterBar.innerHTML = tags.map(tag =>
+                `<span class="filter-tag" data-tag="${tag}">#${tag}</span>`
+            ).join('') + `<span class="filter-reset" id="filterReset"><i class="ri-close-line"></i> Сбросить</span>`;
+
+            filterBar.querySelectorAll('.filter-tag').forEach(tagEl => {
+                tagEl.addEventListener('click', function() {
+                    const tag = this.getAttribute('data-tag');
+                    if (activeFilter === tag) {
+                        activeFilter = null;
+                        filterBar.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                        document.getElementById('filterReset').classList.remove('visible');
+                    } else {
+                        activeFilter = tag;
+                        filterBar.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        document.getElementById('filterReset').classList.add('visible');
+                    }
+                    renderTopics(allTopics);
+                });
+            });
+
+            const resetBtn = document.getElementById('filterReset');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    activeFilter = null;
+                    filterBar.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                    resetBtn.classList.remove('visible');
+                    renderTopics(allTopics);
+                });
+            }
+        }
+
+        function renderTopics(topics) {
+            if (!topicsContainer) return;
+            const filtered = activeFilter ? topics.filter(t => (t.tags || []).includes(activeFilter)) : topics;
+
+            if (!filtered.length) {
+                topicsContainer.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-secondary);">Темы не найдены</div>';
+                return;
+            }
+
+            topicsContainer.innerHTML = filtered.map(item => {
+                let mediaHTML = '';
+                if (item.video) {
+                    const videoPath = item.video.startsWith('http') ? item.video : 'videoPS/' + item.video;
+                    if (videoPath.includes('youtube.com') || videoPath.includes('youtu.be') || videoPath.includes('vimeo.com')) {
+                        mediaHTML = `<iframe class="topic-video" src="${videoPath}" allowfullscreen loading="lazy"></iframe>`;
+                    } else {
+                        mediaHTML = `<video class="topic-video" src="${videoPath}" controls playsinline preload="metadata"></video>`;
+                    }
+                }
+                if (item.image && !item.video) {
+                    const imgPath = item.image.startsWith('http') ? item.image : 'imgPS/' + item.image;
+                    mediaHTML = `<img class="topic-image" src="${imgPath}" alt="Image" loading="lazy" data-lightbox="${imgPath}" onerror="this.style.display='none'">`;
+                }
+                const filesHTML = renderFileAttachments(item.files);
+                return `
+                <article class="topic-card">
+                    <div class="topic-header">
+                        <div class="topic-avatar">${item.avatar || (item.author ? item.author[0].toUpperCase() : '?')}</div>
+                        <div class="topic-user-info">
+                            <span class="topic-username">${item.author || 'Аноним'}</span>
+                            <span class="topic-meta">
+                                <span>${item.date || ''}</span>
+                                ${(item.tags || []).map(t => `<span class="topic-badge">#${t}</span>`).join('')}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="topic-body">
+                        ${mediaHTML}
+                        ${item.text ? `<p class="topic-text">${item.text}</p>` : ''}
+                        ${filesHTML}
+                    </div>
+                </article>`;
+            }).join('');
+
+            topicsContainer.querySelectorAll('.topic-image').forEach(img => {
+                img.addEventListener('click', function() {
+                    openLightbox(this.getAttribute('data-lightbox') || this.src);
+                });
+            });
+        }
+
+        function parseTxtData(text) {
+            const objects = [];
+            const cleaned = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const blocks = cleaned.split(/\n\}\s*\n/);
+            blocks.forEach(block => {
+                block = block.trim();
+                if (!block) return;
+                if (!block.endsWith('}')) block += '\n}';
+                if (block.startsWith('{')) {
+                    try {
+                        const obj = JSON.parse(block);
+                        objects.push(obj);
+                    } catch (e) {}
+                }
+            });
+            if (objects.length === 0) {
+                try {
+                    const fixed = '[' + text.replace(/\}\s*\{/g, '},{') + ']';
+                    const arr = JSON.parse(fixed);
+                    return arr;
+                } catch (e) {}
+            }
+            return objects;
+        }
+
+        async function loadTopics() {
+            try {
+                const response = await fetch('./pxt.txt');
+                if (!response.ok) throw new Error('status ' + response.status);
+                const text = await response.text();
+                const parsed = parseTxtData(text);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    allTopics = parsed;
+                }
+            } catch (err) {
+                console.log('pxt.txt не загрузился, использую встроенные темы');
+            }
+            const tags = getAllTags(allTopics);
+            renderFilterBar(tags);
+            renderTopics(allTopics);
+        }
+
+        loadTopics();
+
+        if (audio) { audio.currentTime = 0; audio.volume = 0.7; }
+
+        function updateFabIcon(paused) {
+            if (!fabIcon) return;
+            fabIcon.className = paused ? 'ri-play-fill' : 'ri-pause-fill';
+            if (!paused) musicFab.classList.add('playing');
+            else musicFab.classList.remove('playing');
+        }
+
+        function togglePlay() {
+            if (!audio) return;
+            if (audio.paused) {
+                audio.currentTime = 0;
+                audio.play().then(() => { updateFabIcon(false); userInteracted = true; }).catch(() => {});
+            } else { audio.pause(); updateFabIcon(true); }
+        }
+
+        audio.addEventListener('play', () => updateFabIcon(false));
+        audio.addEventListener('pause', () => updateFabIcon(true));
+        audio.addEventListener('ended', () => { updateFabIcon(true); audio.currentTime = 0; if (userInteracted) audio.play().catch(() => {}); });
+        if (musicFab) musicFab.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+        updateFabIcon(true);
+
+        document.addEventListener('click', function initPlay(e) {
+            if (audio && audio.paused && !userInteracted && e.target !== musicFab) {
+                audio.currentTime = 0;
+                audio.play().then(() => { updateFabIcon(false); userInteracted = true; }).catch(() => {});
+            }
+            document.removeEventListener('click', initPlay);
+        }, { once: true });
+
+        function toggleTheme() {
+            isDark = !isDark;
+            if (isDark) { document.body.classList.remove('light'); themeIcon.className = 'ri-sun-line'; }
+            else { document.body.classList.add('light'); themeIcon.className = 'ri-moon-line'; }
+        }
+        if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+        function createStar() {
+            const star = document.createElement('div'); star.classList.add('star');
+            const size = Math.random() * 3 + 1.5;
+            star.style.width = size + 'px'; star.style.height = size + 'px';
+            star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
+            star.style.animationDuration = (Math.random() * 4 + 2) + 's';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+            const glow = document.createElement('div'); glow.classList.add('star-glow');
+            glow.style.width = (size * 2.5) + 'px'; glow.style.height = (size * 2.5) + 'px';
+            glow.style.left = star.style.left; glow.style.top = star.style.top;
+            glow.style.animationDuration = star.style.animationDuration;
+            glow.style.animationDelay = star.style.animationDelay;
+            starsContainer.appendChild(glow);
+        }
+        for (let i = 0; i < 60; i++) createStar();
+        setInterval(() => { if (starsContainer.querySelectorAll('.star').length < 60) createStar(); }, 3000);
+    })();
+    </script>
+</body>
+</html>
